@@ -57,40 +57,29 @@ def dat():
 #                         title = f"Histogram of {input.selectize()}" )
 
 # Input asking
-ui.input_selectize( "selectize",
+ui.input_selectize( "city",
                     "Select an option below:",
-                    {'All':'All',
-                     'Atlanta (GA)':'Atlanta (GA)', 
-                     'Austin (TX)': 'Austin (TX)', 
-                     'Boston (MA)':'Boston (MA)',
-                     'Dallas (TX)':'Dallas (TX)',
-                     'Los Angeles (CA)':'Los Angeles (CA)',
-                     'New York City (NY)':'New York City (NY)', 
-                     'Portland (ME)':'Portland (ME)',
-                     'Portland (OR)':'Portland (OR)',
-                     'San Francisco (CA)':'San Francisco (CA)', 
-                     'Seattle (WA)':'Seattle (WA)'},
+                    ['Atlanta (GA)', 'Austin (TX)', 'Boston (MA)', 'Dallas (TX)', 
+                     'Los Angeles (CA)','New York City (NY)', 'Portland (ME)', 
+                     'Portland (OR)', 'San Francisco (CA)', 'Seattle (WA)'],
                       multiple = True,
-                      selected = 'All' )  
+                      selected = 'Atlanta (GA)' )  
 
 @render_plotly
 def sales_over_time():
-    # print(input.selectize())
     df = dat()
     sales = df.groupby(['city','month'])['quantity_ordered'].sum().reset_index()
-    month_orders = calendar.month_name[1:]
-
-    if input.selectize() in sales['city'].unique():
-        sales = sales[sales['city'] == input.selectize()]
-        
-    print(list(sales['city'].unique()))
     # print(sales)
-    
-    fig = px.bar(sales, x = 'month', y = 'quantity_ordered',   
-                  category_orders = {'month': month_orders},
-                  color ='city',
-                  title = f"Sales Over Time in {input.selectize()} region"
-                  )
+    month_orders = calendar.month_name[1:]
+    print(list(input.city()))   
+    sales_by_city = sales[sales['city'].isin(input.city())]   
+    print(list(sales_by_city['city'].unique()))
+    # print(sales_by_city)
+    fig = px.bar(sales_by_city, x = 'month', y = 'quantity_ordered',   
+                 category_orders = {'month': month_orders},
+                 color ='city',
+                 title = f"Sales Over Time in {input.city()[0:len(input.city())]} region"
+                 )
     return fig
     
 

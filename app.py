@@ -10,7 +10,8 @@ from shiny.express import input, ui, render
 from shinywidgets import render_plotly
 
 # Maing page parameters
-ui.page_opts(title = "Demo", fillable = True)
+ui.page_opts(title = "Demo", 
+             fillable = False)
 # UI mode
 # ui.input_dark_mode() 
 
@@ -23,38 +24,40 @@ def dat():
     df['month'] = df['order_date'].dt.month_name()
     return df
 
-# # Display DF in a card
-# with ui.card():
-#     # Card title
-#     ui.card_header("Sample Sales Data")
-#     # Rendering it as DF
-#     @render.data_frame
-#     def sample_data():
-#         return dat().head(30)
+# Display DF in a card
+with ui.card():
+    # Card title
+    ui.card_header("Sample Sales Data")
+    # Rendering it as DF
+    @render.data_frame
+    def sample_data():
+        return dat().head(30)
 
-# # Input asking
-# ui.input_numeric("n", "Numeric input", 5, min = 2, max = 10) 
-# @render_plotly
-# def top_products():
-#     df = dat().groupby("product")['quantity_ordered'].sum().\
-#         nlargest(input.n()).reset_index()
-#     return px.bar(df, x = "product", y = "quantity_ordered", 
-#                   title = f"Top {input.n()} largest ordered products")
+# Input asking
+ui.input_numeric("n", "Numeric input", 5, min = 2, max = 10) 
+# Plot 1: top products
+@render_plotly
+def top_products():
+    df = dat().groupby("product")['quantity_ordered'].sum().\
+        nlargest(input.n()).reset_index()
+    return px.bar(df, x = "product", y = "quantity_ordered", 
+                  title = f"Top {input.n()} largest ordered products")
 
-# # Input asking
-# ui.input_selectize( "selectize",
-#                    "Select an option below:",
-#                    {"quantity_ordered": "Quantity Ordered",
-#                     "price_each": "Price Each"} 
-#                     )  
-# # @render.text
-# # def value():
-# #     return f"{input.selectize()}"
-# @render_plotly
-# def histogram():
-#     df = dat()
-#     return px.histogram(df, x = input.selectize(), nbins = 10,
-#                         title = f"Histogram of {input.selectize()}" )
+# Input asking
+ui.input_selectize( "selectize",
+                   "Select an option below:",
+                   {"quantity_ordered": "Quantity Ordered",
+                    "price_each": "Price Each"} 
+                    )  
+# @render.text
+# def value():
+#     return f"{input.selectize()}"
+# Plot 2: Histogram
+@render_plotly
+def histogram():
+    df = dat()
+    return px.histogram(df, x = input.selectize(), nbins = 10,
+                        title = f"Histogram of {input.selectize()}" )
 
 # Input asking
 ui.input_selectize( "city",
@@ -64,7 +67,7 @@ ui.input_selectize( "city",
                      'Portland (OR)', 'San Francisco (CA)', 'Seattle (WA)'],
                       multiple = True,
                       selected = 'Atlanta (GA)' )  
-
+# plot 3: Sales over time
 @render_plotly
 def sales_over_time():
     df = dat()
@@ -75,10 +78,12 @@ def sales_over_time():
     sales_by_city = sales[sales['city'].isin(input.city())]   
     print(list(sales_by_city['city'].unique()))
     # print(sales_by_city)
-    fig = px.bar(sales_by_city, x = 'month', y = 'quantity_ordered',   
+    fig = px.bar(sales_by_city, 
+                 x = 'month', 
+                 y = 'quantity_ordered',   
                  category_orders = {'month': month_orders},
                  color ='city',
-                 title = f"Sales Over Time in {input.city()[0:len(input.city())]} region"
+                 title = f"Sales Over Time -- {input.city()} region"
                  )
     return fig
     

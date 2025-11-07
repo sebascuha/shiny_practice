@@ -67,9 +67,10 @@ with ui.card():
                         x = 'month', 
                         y = 'quantity_ordered',   
                         category_orders = {'month': month_orders},
-                        color ='Blues',
+                        color ='city',
                         title = f"Sales Over Time -- {input.city()}"
                         )
+            
             return fig 
 
 with ui.layout_column_wrap(columns = 1/2):

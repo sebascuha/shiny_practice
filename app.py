@@ -18,10 +18,17 @@ from shiny.express import input, ui, render
 from shinywidgets import render_plotly
 
 # =========================================================
-# Maing page parameters
+# Page parameters
 
 ui.page_opts(title = "Demo", 
              fillable = False)
+
+# print(px.colors.sequential.Blues,"\n",
+#       list(px.colors.sequential.Blues)[::-1])
+
+colors = list(px.colors.sequential.Blues)[::-1]
+color_basis = "#2170B5" # https://htmlcolorcodes.com/
+
 # =========================================================
 # Dashboars layout and components
 
@@ -68,15 +75,15 @@ with ui.card():
                         y = 'quantity_ordered',   
                         category_orders = {'month': month_orders},
                         color ='city',
-                        title = f"Sales Over Time -- {input.city()}"
+                        color_discrete_sequence = colors,
+                        title = f"Sales Over Time -- {input.city()}",
                         )
-            
+
             return fig 
 
 with ui.layout_column_wrap(columns = 1/2):
     with ui.navset_pill(id = "tab",
-                        footer = ui.\
-                            input_numeric("n", "Number of products",
+                        footer = ui.input_numeric("n", "Number of products",
                                           5, min = 2, max = 10)): 
         
         with ui.nav_panel("Top Sellers (Q)"):
@@ -86,8 +93,10 @@ with ui.layout_column_wrap(columns = 1/2):
                 def top_products_quant():
                     df = dat().groupby("product")['quantity_ordered'].sum().\
                         nlargest(input.n()).reset_index()
-                    return px.bar(df, x = "product", y = "quantity_ordered", 
+                    fig = px.bar(df, x = "product", y = "quantity_ordered", 
                                 title = f"Top {input.n()} largest ordered products")
+                    fig.update_traces(marker_color = color_basis)
+                    return fig
 
         with ui.nav_panel("Top Sellers ($)"):
             with ui.card():
@@ -96,8 +105,10 @@ with ui.layout_column_wrap(columns = 1/2):
                 def top_products_val():
                     df = dat().groupby("product")['sale_value'].sum().\
                         nlargest(input.n()).reset_index()
-                    return px.bar(df, x = "product", y = "sale_value", 
+                    fig = px.bar(df, x = "product", y = "sale_value", 
                                 title = f"Top {input.n()} sellers products")
+                    fig.update_traces(marker_color = color_basis)
+                    return fig
                     
         with ui.nav_panel("Lowest Sellers (Q)"):
             with ui.card():
@@ -106,8 +117,11 @@ with ui.layout_column_wrap(columns = 1/2):
                 def low_products_quant():
                     df = dat().groupby("product")['quantity_ordered'].sum().\
                         nsmallest(input.n()).reset_index()
-                    return px.bar(df, x = "product", y = "quantity_ordered", 
+                    fig = px.bar(df, x = "product", y = "quantity_ordered", 
                                 title = f"Lowesr {input.n()} sellers products")
+                    fig.update_traces(marker_color = color_basis)
+                    return fig
+                    
                     
         with ui.nav_panel("Lowest Sellers ($)"):
             with ui.card():
@@ -116,8 +130,10 @@ with ui.layout_column_wrap(columns = 1/2):
                 def low_products_val():
                     df = dat().groupby("product")['sale_value'].sum().\
                         nsmallest(input.n()).reset_index()
-                    return px.bar(df, x = "product", y = "sale_value", 
+                    fig = px.bar(df, x = "product", y = "sale_value", 
                                 title = f"Lowest {input.n()} sellers products")
+                    fig.update_traces(marker_color = color_basis)
+                    return fig
     
     with ui.card():
         # Plot 3: Sales by time of day
@@ -127,10 +143,9 @@ with ui.layout_column_wrap(columns = 1/2):
             df = dat()
             sales_by_hour = df['hour'].value_counts().\
                 reindex(np.arange(0,24), fill_value = 0).sort_index()
-            print(sales_by_hour)
 
             heatmap_data = sales_by_hour.values.reshape(24,1)
-            print(heatmap_data)
+    
             fig = sns.heatmap( heatmap_data, 
                         cmap = "Blues", 
                         cbar = True,
@@ -138,10 +153,7 @@ with ui.layout_column_wrap(columns = 1/2):
                         yticklabels = [f'{hour}:00' for hour in range(24)],
                         annot = True
                         )
-            plt.ticklabel_format
             return fig
-
-            
 
 # # Display DF in a card
 # with ui.card():
@@ -151,10 +163,3 @@ with ui.layout_column_wrap(columns = 1/2):
 #     @render.data_frame
 #     def sample_data():
 #         return dat().head(30)
-
-    
-
-    
-    
-
- 

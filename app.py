@@ -1,20 +1,29 @@
+# =========================================================
+# Directory handling
 from pathlib import Path
 
+# Handle data
 import pandas as pd
+import numpy as np
 import calendar
 
-
+# Visualization frameworks
 import plotly.express as px
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Shiny framework
 from shiny import reactive
 from shiny.express import input, ui, render
 from shinywidgets import render_plotly
 
+# =========================================================
 # Maing page parameters
+
 ui.page_opts(title = "Demo", 
              fillable = False)
-
-# UI mode
-# ui.input_dark_mode() 
+# =========================================================
+# Dashboars layout and components
 
 # Real csv data loading
 @reactive.calc
@@ -24,6 +33,7 @@ def dat():
     df['sale_value'] = df['quantity_ordered'] * df['price_each']
     df['order_date'] = pd.to_datetime(df['order_date'])
     df['month'] = df['order_date'].dt.month_name()
+    df['hour'] = df['order_date'].dt.hour
     return df
 
 with ui.card():  
@@ -57,75 +67,89 @@ with ui.card():
                         x = 'month', 
                         y = 'quantity_ordered',   
                         category_orders = {'month': month_orders},
-                        color ='city',
+                        color ='Blues',
                         title = f"Sales Over Time -- {input.city()}"
                         )
             return fig 
 
-
-from shiny.express import ui
-
-with ui.navset_pill(id = "tab"): 
-     
-    with ui.nav_panel("Top Sellers (Q)"):
-        with ui.layout_columns(col_widths = [6,6]):
+with ui.layout_column_wrap(columns = 1/2):
+    with ui.navset_pill(id = "tab",
+                        footer = ui.\
+                            input_numeric("n", "Number of products",
+                                          5, min = 2, max = 10)): 
+        
+        with ui.nav_panel("Top Sellers (Q)"):
             with ui.card():
-                # Input asking
-                ui.input_numeric("n1", "Numeric input", 5, min = 2, max = 10) 
-                # Plot 2: top products
+                # Plot 2.1: top products
                 @render_plotly
                 def top_products_quant():
                     df = dat().groupby("product")['quantity_ordered'].sum().\
-                        nlargest(input.n1()).reset_index()
+                        nlargest(input.n()).reset_index()
                     return px.bar(df, x = "product", y = "quantity_ordered", 
-                                title = f"Top {input.n1()} largest ordered products")
-            with ui.card():
-                # Input asking
-                ui.input_slider("bin1", "Number of bins:",
-                                 min = 5, max = 10, value = 10)
-              
-                # Plot 3: Histogram
-                @render_plotly
-                def histogram_quant():
-                    df = dat()
-                    return px.histogram(df, x = "quantity_ordered", nbins = input.bin1(),
-                                        title = f"Histogram of quantity ordereed" )
+                                title = f"Top {input.n()} largest ordered products")
 
-    with ui.nav_panel("Top Sellers ($)"):
-        with ui.layout_columns(col_widths = [6,6]):
+        with ui.nav_panel("Top Sellers ($)"):
             with ui.card():
-                # Input asking
-                ui.input_numeric("n2", "Numeric input", 5, min = 2, max = 10) 
-                # Plot 2: top products
+                # Plot 2.2: top products
                 @render_plotly
                 def top_products_val():
                     df = dat().groupby("product")['sale_value'].sum().\
-                        nlargest(input.n2()).reset_index()
+                        nlargest(input.n()).reset_index()
                     return px.bar(df, x = "product", y = "sale_value", 
-                                title = f"Top {input.n2()} sellers products")
+                                title = f"Top {input.n()} sellers products")
+                    
+        with ui.nav_panel("Lowest Sellers (Q)"):
             with ui.card():
-                ui.input_slider("bin2", "Number of bins:",
-                                 min = 5, max = 10, value = 10)
+                # Plot 2.3: top products
                 @render_plotly
-                def histogram_val():
-                    df = dat()
-                    return px.histogram(df, x = "sale_value", nbins = input.bin2(),
-                                        title = f"Histogram of sales value ($)" )
+                def low_products_quant():
+                    df = dat().groupby("product")['quantity_ordered'].sum().\
+                        nsmallest(input.n()).reset_index()
+                    return px.bar(df, x = "product", y = "quantity_ordered", 
+                                title = f"Lowesr {input.n()} sellers products")
+                    
+        with ui.nav_panel("Lowest Sellers ($)"):
+            with ui.card():
+                # Plot 2.4: top products
+                @render_plotly
+                def low_products_val():
+                    df = dat().groupby("product")['sale_value'].sum().\
+                        nsmallest(input.n()).reset_index()
+                    return px.bar(df, x = "product", y = "sale_value", 
+                                title = f"Lowest {input.n()} sellers products")
+    
+    with ui.card():
+        # Plot 3: Sales by time of day
+        ui.card_header('Sales by Time of day')
+        @render.plot
+        def plot_sales_by_time():
+            df = dat()
+            sales_by_hour = df['hour'].value_counts().\
+                reindex(np.arange(0,24), fill_value = 0).sort_index()
+            print(sales_by_hour)
 
-    with ui.nav_panel("C"):
-        "Panel C content"
+            heatmap_data = sales_by_hour.values.reshape(24,1)
+            print(heatmap_data)
+            fig = sns.heatmap( heatmap_data, 
+                        cmap = "Blues", 
+                        cbar = True,
+                        xticklabels = ['Sales'],
+                        yticklabels = [f'{hour}:00' for hour in range(24)],
+                        annot = True
+                        )
+            plt.ticklabel_format
+            return fig
 
-    with ui.nav_panel("D"):
-        "Page D content"
+            
 
-# Display DF in a card
-with ui.card():
-    # Card title
-    ui.card_header("Sample Sales Data")
-    # Rendering it as DF
-    @render.data_frame
-    def sample_data():
-        return dat().head(30)
+# # Display DF in a card
+# with ui.card():
+#     # Card title
+#     ui.card_header("Sample Sales Data")
+#     # Rendering it as DF
+#     @render.data_frame
+#     def sample_data():
+#         return dat().head(30)
 
     
 

@@ -3,7 +3,7 @@
 ![Shiny](https://img.shields.io/badge/Shiny-Python-orange)
 ![Plotly](https://img.shields.io/badge/Plotly-Interactive-lightblue)
 
-This repository contains different projects built with Python Shiny.
+This repository contains different projects built with **Python Shiny**.
 
 ![image info](./assets/shiny.jpeg)
 

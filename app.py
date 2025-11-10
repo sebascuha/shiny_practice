@@ -141,71 +141,6 @@ with ui.card():
                         fig.update_layout(xaxis_title = "Product", 
                                           yaxis_title = "Quantity Ordered")
 
-<<<<<<< HEAD
-with ui.layout_column_wrap(columns = 1/2):
-    with ui.card():
-        with ui.navset_pill(id = "tab",
-                            footer = ui.input_numeric("n", "Number of products",
-                                            5, min = 2, max = 10)): 
-            
-            with ui.nav_panel("Top Sellers (Q)"):
-                with ui.card():
-                    # Plot 2.1: top products
-                    @render_plotly
-                    def top_products_quant():
-                        df = dat().groupby("product")['quantity_ordered'].sum().\
-                            nlargest(input.n()).reset_index()
-                        fig = px.bar(df, x = "product", y = "quantity_ordered", 
-                                    title = f"Top {input.n()} largest ordered products")
-                        fig.update_traces(marker_color = color_basis)
-                        return fig
-
-            with ui.nav_panel("Top Sellers ($)"):
-                with ui.card():
-                    # Plot 2.2: top products
-                    @render_plotly
-                    def top_products_val():
-                        df = dat().groupby("product")['sale_value'].sum().\
-                            nlargest(input.n()).reset_index()
-                        fig = px.bar(df, x = "product", y = "sale_value", 
-                                    title = f"Top {input.n()} sellers products")
-                        fig.update_traces(marker_color = color_basis)
-                        return fig
-                        
-            with ui.nav_panel("Lowest Sellers (Q)"):
-                with ui.card():
-                    # Plot 2.3: top products
-                    @render_plotly
-                    def low_products_quant():
-                        df = dat().groupby("product")['quantity_ordered'].sum().\
-                            nsmallest(input.n()).reset_index()
-                        fig = px.bar(df, x = "product", y = "quantity_ordered", 
-                                    title = f"Lowesr {input.n()} sellers products")
-                        fig.update_traces(marker_color = color_basis)
-                        return fig
-                        
-                        
-            with ui.nav_panel("Lowest Sellers ($)"):
-                with ui.card():
-                    # Plot 2.4: top products
-                    @render_plotly
-                    def low_products_val():
-                        df = dat().groupby("product")['sale_value'].sum().\
-                            nsmallest(input.n()).reset_index()
-                        fig = px.bar(df, x = "product", y = "sale_value", 
-                                    title = f"Lowest {input.n()} sellers products")
-                        fig.update_traces(marker_color = color_basis)
-                        return fig
-    
-    with ui.card():
-        # Plot 3: Sales by time of day
-        ui.card_header('Sales by Time of day')
-        @render.plot
-        def plot_sales_by_time():
-            df = dat()
-            sales_by_hour = df['hour'].value_counts().\
-                reindex(np.arange(0,24), fill_value = 0).sort_index()
-=======
                         return fig
 
             with ui.nav_panel("Top Sellers ($)"):
@@ -272,7 +207,6 @@ with ui.layout_column_wrap(columns = 1/2):
                             annot_kws = {'size': 10}  # Adjust font size for better readability
                             )
                 return fig
->>>>>>> application_edit
 
 # Display DF in a card
 with ui.card():
